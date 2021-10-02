@@ -5,7 +5,7 @@ from platform import system
 from pathlib import Path
 from json import loads
 from shutil import rmtree
-from os import path
+from os import path, chdir
 
 packages = argv[2:]
 subcommands = ["install", "uninstall", "publish", "unpublish"]
@@ -29,7 +29,7 @@ elif system() == "Windows":
 
 # Argument shit
 if len(argv) == 1:
-    print("Usage: cstm [subcommand] (package)\n\nSubcommands:\n     version\n     Returns CSTM's version number\n\n     install [package]\n     Installs a package\n\n     uninstall [package]\n     Uninstalls a package\n\n     publish [cstmbuild]\n     Publishes a package's CSTMBUILD\n\n     unpublish [package]\n     Unpublishes a package's CSTMBUILD\n")
+    print("Usage: cstm [subcommand] (package)\n\nSubcommands:\n     version\n     Returns CSTM's version number\n\n     install [package(s)]\n     Installs a package\n\n     uninstall [package(s)]\n     Uninstalls a package\n\n     update (package(s))\n     Updates packages\n\n     publish [cstmbuild]\n     Publishes a package's CSTMBUILD\n\n     unpublish [package]\n     Unpublishes a package's CSTMBUILD\n")
     exit()
 
 if argv[1] == "version":
@@ -89,9 +89,34 @@ if argv[1] == "install":
     print("\n".join(packages_ls)+"\n\n:: Proceed? [Y/n]")
     sel = input(">>> ")
     if len(sel) == 0 or sel == "y" or sel == "Y":
-        print("Yes")
+        for i in packages_db:
+            if i in depends_db:
+                depends_db.remove(i)
+        chdir(libraries_root)
+        for i in packages_db:
+            if "type" in i:
+                package_type = i["type"]
+            else:
+                package_type = "git"
+            print(f":> Installing \"{i['id']}\", please wait.")
+            if package_type == "git":
+                getoutput(f"git clone {i['source']} {i['id']}")
+                if path.isdir(f"{libraries_root}{i['id']}") == False:
+                    print(f"Error: Failed to install package \"{i['id']}\", no permission.")
+        if len(depends_db) != 0:
+            for i in depends_db:
+                if "type" in i:
+                    package_type = i["type"]
+                else:
+                    package_type = "git"
+                print(f":> Installing \"{i['id']}\", please wait.")
+                if package_type == "git":
+                    getoutput(f"git clone {i['source']} {i['id']}")
+                    if path.isdir(f"{libraries_root}{i['id']}") == False:
+                        print(f"Error: Failed to install package \"{i['id']}\", no permission.")
     elif sel == "n" or sel == "N":
-        print("No")
+        quit()
+    else:
         quit()
 if argv[1] == "uninstall":
     if argv[2] in ["std", "gamescene"]:
@@ -117,6 +142,12 @@ if argv[1] == "uninstall":
             except PermissionError:
                 print(f"Error: Failed to uninstall package \"{i}\", no permission.")
                 exit()
+        else:
+            quit()
+
+if argv[1] == "update":
+    print("Error: Not implemented yet.")
+    quit()
 
 if argv[1] == "publish":
     print("Error: Not implemented yet.")
