@@ -1,4 +1,6 @@
 # CSTM
 An AUR like, SPWN Package Manager
 
-It doesn't do much yet.
+Can:
+- Install (Only from git right now)
+- Uninstall
