@@ -70,7 +70,6 @@ if argv[1] == "uninstall":
         print("\n".join(packages_new)+"\n\n:: Proceed? [y/N]")
         sel = input(">>> ")
         if sel == 0 or sel == "n" or sel == "N":
-            print("No")
             quit()
         elif sel == "y" or sel == "Y":
             try:
