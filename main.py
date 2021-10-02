@@ -37,17 +37,56 @@ if argv[1] == "version":
     exit()
 
 if argv[1] == "install":
-    res = requests.get(f"{base_url}{argv[2]}")
-    if res.status_code == 200:
-        build = loads(res.text)
-    else:
-        print(f"Error: Package \"{argv[2]}\" not found.")
-        exit()
-    if "depends" in build:
+    packages_db = []
+    depends_db = []
+    packages_ls = []
+    depends_ls = []
+    redo = True
+    for i in packages:
+        res = requests.get(f"{base_url}{i}")
+        if res.status_code == 200:
+            build = loads(res.text)
+            packages_db.append(build)
+        else:
+            print(f"Error: Package \"{i}\" not found.")
+            exit()
+    for i in packages_db:
+        packages_ls.append(f"{i['id']} -> {i['version']}")
+        if "depends" in i:
+            for i in i["depends"]:
+                res = requests.get(f"{base_url}{i}")
+                if res.status_code == 200:
+                    build = loads(res.text)
+                    if i in depends_db:
+                        pass
+                    else:
+                        depends_db.append(build)
+                else:
+                    print(f"Error: Package \"{i}\" not found.")
+                    quit()
+    for i in depends_db:
+        if "depends" in i:
+            for i in i["depends"]:
+                res = requests.get(f"{base_url}{i}")
+                if res.status_code == 200:
+                    build = loads(res.text)
+                    if build in depends_db:
+                        pass
+                    else:
+                        depends_db.append(build)
+                else:
+                    print(f"Error: Package \"{i}\" not found.")
+                    quit()
+    for i in depends_db:
+        if f"{i['id']} -> {i['version']}" in packages_ls:
+            pass
+        else:
+            depends_ls.append(f"{i['id']} -> {i['version']}")
+    if len(depends_ls) != 0:
         print(f":: Dependencies to be installed:")
-        print("\n".join(build["depends"])+"\n")
+        print("\n".join(depends_ls)+"\n")
     print(f":: Package(s) to be installed:")
-    print("\n".join(packages)+"\n\n:: Proceed? [Y/n]")
+    print("\n".join(packages_ls)+"\n\n:: Proceed? [Y/n]")
     sel = input(">>> ")
     if len(sel) == 0 or sel == "y" or sel == "Y":
         print("Yes")
