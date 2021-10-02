@@ -1,11 +1,13 @@
 import requests
+import zipfile
 from sys import argv
 from subprocess import getoutput
 from platform import system
 from pathlib import Path
+from urllib import request
 from json import loads
 from shutil import rmtree
-from os import path, chdir
+from os import path, chdir, remove
 
 packages = argv[2:]
 subcommands = ["install", "uninstall", "publish", "unpublish"]
@@ -103,6 +105,15 @@ if argv[1] == "install":
                 getoutput(f"git clone {i['source']} {i['id']}")
                 if path.isdir(f"{libraries_root}{i['id']}") == False:
                     print(f"Error: Failed to install package \"{i['id']}\", no permission.")
+            elif package_type == "zip":
+                try:
+                    request.urlretrieve(i["source"], "temp_package.zip")
+                except PermissionError:
+                    print(f"Error: Failed to install package \"{i['id']}\", no permission.")
+                    quit()
+                with zipfile.ZipFile("temp_package.zip", "r") as package:
+                    package.extractall(".")
+                remove("temp_package.zip")
         if len(depends_db) != 0:
             for i in depends_db:
                 if "type" in i:
@@ -114,6 +125,16 @@ if argv[1] == "install":
                     getoutput(f"git clone {i['source']} {i['id']}")
                     if path.isdir(f"{libraries_root}{i['id']}") == False:
                         print(f"Error: Failed to install package \"{i['id']}\", no permission.")
+                        quit()
+                elif package_type == "zip":
+                    try:
+                        request.urlretrieve(i["source"], "temp_package.zip")
+                    except PermissionError:
+                        print(f"Error: Failed to install package \"{i['id']}\", no permission.")
+                        quit()
+                    with zipfile.ZipFile("temp_package.zip", "r") as package:
+                        package.extractall(".")
+                    remove("temp_package.zip")
     elif sel == "n" or sel == "N":
         quit()
     else:

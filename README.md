@@ -2,7 +2,7 @@
 An AUR like, SPWN Package Manager
 
 Can:
-- [X] Install (Only from git right now)
+- [X] Install
 - [X] Uninstall
 - [ ] Update
 - [ ] Publish
