@@ -4,6 +4,6 @@ An AUR like, SPWN Package Manager
 Can:
 - [X] Install
 - [X] Uninstall
-- [ ] Update
+- [X] Update
 - [ ] Publish
 - [ ] Unpublish
