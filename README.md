@@ -5,5 +5,5 @@ Can:
 - [X] Install
 - [X] Uninstall
 - [X] Update
-- [ ] Publish
-- [ ] Unpublish
+- [ ] Publish (From the CLI)
+- [ ] Unpublish (From the CLI)
