@@ -1,5 +1,5 @@
 # CSTM
-An AUR like, [SPWN](https://github.com/Spu7Nix/SPWN-language) Package Manager
+[SPWN](https://github.com/Spu7Nix/SPWN-language) package manager, AUR style.
 
 Can:
 - [X] Install
