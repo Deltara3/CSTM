@@ -1,6 +1,8 @@
 # CSTM
 [SPWN](https://github.com/Spu7Nix/SPWN-language) package manager, AUR style.
 
+Branch: main
+
 Can:
 - [X] Install
 - [X] Uninstall
