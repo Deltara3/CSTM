@@ -124,7 +124,7 @@ func main() {
                 let data = pkgmd.data(using: .utf8)!
                 let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
                 print("""
-                ⇢ \u{001B}[0;35m🕮   \u{001B}[0;0mTable for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mbuilt.
+                ⇢ \u{001B}[0;35m🕮   \u{001B}[0;0mPackage table built.
                    \u{001B}[0;35m│      \u{001B}[0;32mName       : \u{001B}[0;36m\"\(table.name)\"
                    \u{001B}[0;35m│      \u{001B}[0;32mIdentifier : \u{001B}[0;36m\"\(table.id)\"
                    \u{001B}[0;35m│      \u{001B}[0;32mAuthor     : \u{001B}[0;36m\"\(table.author)\"
