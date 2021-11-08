@@ -1,6 +1,7 @@
 import Foundation
 import Alamofire
-import Files
+import ProcessRunner
+import Path
 
 // The opposite of eye candy.
 func help() {
@@ -23,13 +24,37 @@ func help() {
 }
 
 func main() {
-    // Make folders if required.
-    print(Folder.home)
-
     // Constants
+    #if os(Windows)
+        let cmd = "where"
+    #endif
+    #if os(Linux) || os(macOS)
+        let cmd = "which"
+    #endif
+
     let subcmds = ["help", "version", "install", "uninstall"]
     let branch  = "\u{001B}[0;35m-swift-rw-dev"
     let ver     = "0.1.0\(branch)"
+    do {
+        let bin_path = try system(command: "\(cmd) spwn", captureOutput: true).standardOutput
+    } catch {
+        print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to run \u{001B}[0;36m\"\(cmd) spwn\"\u{001B}[0;0m, a required command, something went horribly wrong.")
+        exit(1)
+    }
+
+    // Create folders, if required.
+    let is_setup = Path.home.join(".cstm").join(".setup")
+    if is_setup.isFile == false {
+        do {
+            try Path.home.join(".cstm").mkdir()
+            try Path.home.join(".cstm").join("cache").mkdir()
+            try Path.home.join(".cstm").join("temp").mkdir()
+            try Path.home.join(".cstm").join(".setup").touch()
+        } catch {
+            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to create folder structure, something went horribly wrong.")
+            exit(1)
+        }
+    }
 
     // Determine if there was no subcommand provided.
     if CommandLine.arguments.count == 1 {
