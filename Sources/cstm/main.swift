@@ -178,6 +178,7 @@ func main() {
                 if library_path.join(i).exists {
                     do {
                         try library_path.join(i).delete()
+                        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage\u{001B}[0;36m\"\(i)\" \u{001B}[0;0muninstalled.")
                     } catch {
                         print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mcould not be uninstalled, try running with elevated permissions.")
                     }
