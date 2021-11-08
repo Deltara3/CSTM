@@ -173,7 +173,17 @@ func main() {
     if subcmd == "uninstall" {
         for i in pkgs {
             if deny.contains(i) {
-                print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36\"\(i)\" \u{001B}[0;0mis a core library, refusing to remove.")
+                print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mis a core library, refusing to uninstall.")
+            } else {
+                if library_path.join(i).exists {
+                    do {
+                        try library_path.join(i).delete()
+                    } catch {
+                        print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mcould not be uninstalled, try running with elevated permissions.")
+                    }
+                } else {
+                    print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mcould not be found, ignoring.")
+                }
             }
         }
     }
