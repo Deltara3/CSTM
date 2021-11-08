@@ -98,6 +98,12 @@ func main() {
             print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkg)\" \u{001B}[0;0mnot found, ignoring.");
         }
     }
+
+    if subcmd == "uninstall" {
+        for pkg in pkgs {
+            print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkg)\" \u{001B}[0;0mnot found, ignoring.");
+        }
+    }
 }
 
 main()
