@@ -50,9 +50,9 @@ func main() {
     if is_setup.isFile == false {
         do {
             try root.mkdir()
-            try Path.home.join(".cstm").join("cache").mkdir()
-            try Path.home.join(".cstm").join("temp").mkdir()
-            try Path.home.join(".cstm").join(".setup").touch()
+            try cache.mkdir()
+            try temp.mkdir()
+            try root.join(".setup").touch()
         } catch {
             print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to create folder structure, something went horribly wrong.")
             exit(1)
