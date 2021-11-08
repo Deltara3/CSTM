@@ -148,7 +148,7 @@ func main() {
         print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mReady to install.")
 
         for i in handled {
-            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mstarted install.")
+            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mInstalling package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
         }
     }
 }
