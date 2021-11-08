@@ -9,9 +9,9 @@ import Path
 // The opposite of eye candy.
 func help() {
         print("""
-        ⇢ \u{001B}[0;35m🕮   \u{001B}[0;0mUsage: \u{001B}[0;32mcstm \u{001B}[0;31m[subcommand] \u{001B}[0;36m{package(s)}
+        ⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mUsage: \u{001B}[0;32mcstm \u{001B}[0;31m[subcommand] \u{001B}[0;36m{package(s)}
            \u{001B}[0;35m│
-           \u{001B}[0;35m│  \u{001B}[0;0mSubcommands:
+           \u{001B}[0;35m│ \u{001B}[0;0mSubcommands:
            \u{001B}[0;35m│      \u{001B}[0;32mhelp
            \u{001B}[0;35m│      \u{001B}[0;0mDisplays this message.
            \u{001B}[0;35m│
@@ -115,23 +115,40 @@ func main() {
     let pkgs = Array(CommandLine.arguments[2 ..< CommandLine.arguments.count])
 
     if subcmd == "install" {
+        var handled     = [String]()
+        var sources     = [String]()
+        var versions    = [String]()
+        var identifiers = [String]()
         for i in pkgs {
-            let pkgmd = metadata(name: i)
-            if pkgmd == "false" {
-                print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnot found, ignoring.")
+            if handled.contains(i) {
+                print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0malready handled, ignoring.")
             } else {
-                print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0m Metadata for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mretrieved.")
-                let data = pkgmd.data(using: .utf8)!
-                let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
-                print("""
-                ⇢ \u{001B}[0;35m🕮   \u{001B}[0;0mPackage table built.
-                   \u{001B}[0;35m│      \u{001B}[0;32mName       : \u{001B}[0;36m\"\(table.name)\"
-                   \u{001B}[0;35m│      \u{001B}[0;32mIdentifier : \u{001B}[0;36m\"\(table.id)\"
-                   \u{001B}[0;35m│      \u{001B}[0;32mAuthor     : \u{001B}[0;36m\"\(table.author)\"
-                   \u{001B}[0;35m│      \u{001B}[0;32mVersion    : \u{001B}[0;36m\"\(table.version)\"
-                   \u{001B}[0;35m╰╌     \u{001B}[0;32mSource     : \u{001B}[0;36m\"\(table.source)\"
-                """)
+            let pkgmd = metadata(name: i)
+                if pkgmd == "false" {
+                    print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnot found, ignoring.")
+                } else {
+                    print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mMetadata for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mretrieved.")
+                    let data = pkgmd.data(using: .utf8)!
+                    let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
+                    print("""
+                    ⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mPackage table built.
+                       \u{001B}[0;35m│      \u{001B}[0;32mName       : \u{001B}[0;36m\"\(table.name)\"
+                       \u{001B}[0;35m│      \u{001B}[0;32mIdentifier : \u{001B}[0;36m\"\(table.id)\"
+                       \u{001B}[0;35m│      \u{001B}[0;32mAuthor     : \u{001B}[0;36m\"\(table.author)\"
+                       \u{001B}[0;35m│      \u{001B}[0;32mVersion    : \u{001B}[0;36m\"\(table.version)\"
+                       \u{001B}[0;35m╰╌     \u{001B}[0;32mSource     : \u{001B}[0;36m\"\(table.source)\"\u{001B}[0;0m
+                    """)
+                    handled.append(i)
+                    sources.append(table.source)
+                    versions.append(table.version)
+                    identifiers.append(table.id)
+                }
             }
+        }
+        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mReady to install.")
+
+        for i in handled {
+            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mstarted install.")
         }
     }
 }
