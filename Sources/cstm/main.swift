@@ -1,5 +1,8 @@
+// CSTM | Deltara3
+// Embrace spaghetti.
+
 import Foundation
-import Alamofire
+import FoundationNetworking
 import ProcessRunner
 import Path
 
@@ -23,27 +26,44 @@ func help() {
         """)
 }
 
+// Grabs metadata of a package.
+func metadata(name: String) -> String {
+    do {
+        return try String(contentsOf: URL(string: "https://raw.githubusercontent.com/Deltara3/cstm-main/main/\(name).json")!)
+    } catch {
+        return "false"
+    }
+}
+
 func main() {
     // Constants
     #if os(Windows)
-        let cmd = "where"
+        let cmd  = "where"
     #endif
     #if os(Linux) || os(macOS)
-        let cmd = "which"
+        let cmd  = "which"
     #endif
 
-    let subcmds = ["help", "version", "install", "uninstall"]
-    let branch  = "\u{001B}[0;35m-swift-rw-dev"
-    let ver     = "0.1.0\(branch)"
+    let subcmds  = ["help", "version", "install", "uninstall"]
+    let branch   = "\u{001B}[0;35m-swift-rw-dev"
+    let ver      = "0.1.0\(branch)"
     do {
         let bin_path = try system(command: "\(cmd) spwn", captureOutput: true).standardOutput
     } catch {
         print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to run \u{001B}[0;36m\"\(cmd) spwn\"\u{001B}[0;0m, a required command, something went horribly wrong.")
         exit(1)
     }
-    let root  = Path.home.join(".cstm")
-    let cache = Path.home.join(".cstm").join("cache")
-    let temp  = Path.home.join(".cstm").join("temp")
+    let root     = Path.home.join(".cstm")
+    let cache    = Path.home.join(".cstm").join("cache")
+    let temp     = Path.home.join(".cstm").join("temp")
+
+    struct Expected: Decodable {
+        let name    : String
+        let id      : String
+        let author  : String
+        let version : String
+        let source  : String
+    }
 
     // Create folders, if required.
     let is_setup = Path.home.join(".cstm").join(".setup")
@@ -53,8 +73,9 @@ func main() {
             try cache.mkdir()
             try temp.mkdir()
             try root.join(".setup").touch()
+            print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0m Successfully initialized folder structure.")
         } catch {
-            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to create folder structure, something went horribly wrong.")
+            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to initialize folder structure, something went horribly wrong.")
             exit(1)
         }
     }
@@ -94,7 +115,24 @@ func main() {
     let pkgs = Array(CommandLine.arguments[2 ..< CommandLine.arguments.count])
 
     if subcmd == "install" {
-        print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"example\" \u{001B}[0;0mnot found, ignoring.")
+        for i in pkgs {
+            let pkgmd = metadata(name: i)
+            if pkgmd == "false" {
+                print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnot found, ignoring.")
+            } else {
+                print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0m Metadata for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mretrieved.")
+                let data = pkgmd.data(using: .utf8)!
+                let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
+                print("""
+                ⇢ \u{001B}[0;35m🕮   \u{001B}[0;0mTable for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mbuilt.
+                   \u{001B}[0;35m│    \u{001B}[0;32mName    : \u{001B}[0;36m\"\(table.name)\"
+                   \u{001B}[0;35m│    \u{001B}[0;32mId      : \u{001B}[0;36m\"\(table.id)\"
+                   \u{001B}[0;35m│    \u{001B}[0;32mAuthor  : \u{001B}[0;36m\"\(table.author)\"
+                   \u{001B}[0;35m│    \u{001B}[0;32mVersion : \u{001B}[0;36m\"\(table.version)\"
+                   \u{001B}[0;35m╰╌   \u{001B}[0;32mSource  : \u{001B}[0;36m\"\(table.source)\"
+                """)
+            }
+        }
     }
 }
 
