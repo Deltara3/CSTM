@@ -41,12 +41,15 @@ func main() {
         print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to run \u{001B}[0;36m\"\(cmd) spwn\"\u{001B}[0;0m, a required command, something went horribly wrong.")
         exit(1)
     }
+    let root  = Path.home.join(".cstm")
+    let cache = Path.home.join(".cstm").join("cache")
+    let temp  = Path.home.join(".cstm").join("temp")
 
     // Create folders, if required.
     let is_setup = Path.home.join(".cstm").join(".setup")
     if is_setup.isFile == false {
         do {
-            try Path.home.join(".cstm").mkdir()
+            try root.mkdir()
             try Path.home.join(".cstm").join("cache").mkdir()
             try Path.home.join(".cstm").join("temp").mkdir()
             try Path.home.join(".cstm").join(".setup").touch()
