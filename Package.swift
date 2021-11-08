@@ -7,14 +7,14 @@ let package = Package(
     name: "cstm",
     dependencies: [
         .package(url: "https://github.com/Alamofire/Alamofire.git", .upToNextMajor(from: "5.4.0")),
-        .package(url: "http://github.com/dduan/Pathos", from: "0.4.2")
+        .package(url: "https://github.com/JohnSundell/Files", from: "4.0.0"),
     ],
     targets: [
         .executableTarget(
             name: "cstm",
             dependencies: [
                 .product(name: "Alamofire", package: "Alamofire"),
-                .product(name: "Pathos", package: "Pathos"),
+                .product(name: "Files", package: "Files"),
             ]),
     ]
 )

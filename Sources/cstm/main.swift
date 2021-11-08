@@ -1,5 +1,6 @@
 import Foundation
 import Alamofire
+import Files
 
 // The opposite of eye candy.
 func help() {
@@ -23,7 +24,6 @@ func help() {
 
 func main() {
     // Make folders if required.
-
 
     // Constants
     let subcmds = ["help", "version", "install", "uninstall"]
