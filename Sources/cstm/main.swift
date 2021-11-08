@@ -45,6 +45,7 @@ func main() {
     #endif
 
     let subcmds  = ["help", "version", "install", "uninstall"]
+    let deny     = ["gamescene", "std"]
     let branch   = "\u{001B}[0;35m-swift-rw-dev"
     let ver      = "0.1.0\(branch)"
 
@@ -121,7 +122,7 @@ func main() {
 
     // Check if at least one package name was provided.
     if CommandLine.arguments.count == 2 {
-        print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mExpected at least \u{001B}[0;36mone \u{001B}[0;0mpackage to act on. ")
+        print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mExpected at least \u{001B}[0;36mone \u{001B}[0;0mpackage to act on.")
         exit(1)
     }
 
@@ -166,6 +167,14 @@ func main() {
             print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mInstalling package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
             print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mRetrieving source.")
             iter = iter + 1
+        }
+    }
+
+    if subcmd == "uninstall" {
+        for i in pkgs {
+            if deny.contains(i) {
+                print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36\"\(i)\" \u{001B}[0;0mis a core library, refusing to remove.")
+            }
         }
     }
 }
