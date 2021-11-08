@@ -1,12 +1,12 @@
 # CSTM
 [SPWN](https://github.com/Spu7Nix/SPWN-language) package manager, AUR style.
 
-Branch: main
+Branch: swift-rewrite (Will replace main)
 
 Can:
-- [X] Install
-- [X] Uninstall
-- [X] Update
+- [ ] Install
+- [ ] Uninstall
+- [ ] Update
 - [ ] Publish (From the CLI)
 - [ ] Unpublish (From the CLI)
 
