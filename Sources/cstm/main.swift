@@ -47,12 +47,26 @@ func main() {
     let subcmds  = ["help", "version", "install", "uninstall"]
     let branch   = "\u{001B}[0;35m-swift-rw-dev"
     let ver      = "0.1.0\(branch)"
+
+    var bin_path: String
+
     do {
-        let bin_path = try system(command: "\(cmd) spwn", captureOutput: true).standardOutput
+        bin_path = try system(command: "\(cmd) spwn", captureOutput: true).standardOutput
     } catch {
         print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to run \u{001B}[0;36m\"\(cmd) spwn\"\u{001B}[0;0m, a required command, something went horribly wrong.")
         exit(1)
     }
+
+    var library_path: Path
+
+    do {
+        library_path = try Path(bin_path)!.readlink().parent.join("libraries")
+    } catch {
+        library_path = Path("~")!
+        print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mFailed to locate library path, something went horribly wrong.")
+        exit(1)
+    }
+
     let root     = Path.home.join(".cstm")
     let cache    = Path.home.join(".cstm").join("cache")
     let temp     = Path.home.join(".cstm").join("temp")
@@ -147,8 +161,11 @@ func main() {
         }
         print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mReady to install.")
 
+        var iter = 0
         for i in handled {
             print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mInstalling package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
+            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mRetrieving source.")
+            iter = iter + 1
         }
     }
 }
