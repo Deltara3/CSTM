@@ -4,6 +4,7 @@
 Branch: swift-rewrite (Will replace main)
 
 Can:
+- [X] Look cool
 - [ ] Install
 - [ ] Uninstall
 - [ ] Update
