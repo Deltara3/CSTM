@@ -24,6 +24,7 @@ func help() {
 
 func main() {
     // Make folders if required.
+    print(Folder.home)
 
     // Constants
     let subcmds = ["help", "version", "install", "uninstall"]
