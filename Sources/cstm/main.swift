@@ -29,7 +29,7 @@ func help() {
 // Grabs metadata of a package.
 func metadata(name: String) -> String {
     do {
-        return try String(contentsOf: URL(string: "https://raw.githubusercontent.com/Deltara3/cstm-main/main/\(name).json")!)
+        return try String(contentsOf: URL(string: "https://raw.githubusercontent.com/Deltara3/cstm-main/main/packages/\(name).json")!)
     } catch {
         return "false"
     }
