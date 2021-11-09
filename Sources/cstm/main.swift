@@ -66,7 +66,7 @@ func main() {
     #endif
 
     #if os(Windows)
-        let read_cmd = "more"
+        let read_cmd = "type"
     #endif
     #if os(Linux) || os(macOS)
         let read_cmd = "cat"
