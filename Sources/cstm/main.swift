@@ -6,6 +6,24 @@ import FoundationNetworking
 import ProcessRunner
 import Path
 
+// Base64
+extension String {
+    func b64encode() -> String? {
+        return data(using: .utf8)?.base64EncodedString()
+    }
+
+    func b64decode() -> String? {
+        var st = self;
+        if (self.count % 4 <= 2) {
+            st += String(repeating: "=", count: (self.count % 4))
+        }
+        guard let data = Data(base64Encoded: st) else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)
+    }
+}
+
 // The opposite of eye candy.
 func help() {
         print("""
@@ -22,14 +40,17 @@ func help() {
            \u{001B}[0;35m│      \u{001B}[0;0mInstalls a package or package(s).
            \u{001B}[0;35m│
            \u{001B}[0;35m│      \u{001B}[0;32muninstall \u{001B}[0;31m[package(s)]
-           \u{001B}[0;35m╰╌     \u{001B}[0;0mUninstalls a package or package(s).
+           \u{001B}[0;35m│      \u{001B}[0;0mUninstalls a package or package(s).
+           \u{001B}[0;35m│
+           \u{001B}[0;35m│      \u{001B}[0;32mbuild \u{001B}[0;31m[package]
+           \u{001B}[0;35m╰╌     \u{001B}[0;0mBuilds a package.
         """)
 }
 
 // Grabs metadata of a package.
 func metadata(name: String) -> String {
     do {
-        return try String(contentsOf: URL(string: "https://raw.githubusercontent.com/Deltara3/cstm-main/main/packages/\(name).json")!)
+        return try String(contentsOf: URL(string: "https://raw.githubusercontent.com/Deltara3/cstm-main/main/packages/\(name).csp")!)
     } catch {
         return "false"
     }
@@ -44,7 +65,14 @@ func main() {
         let cmd  = "which"
     #endif
 
-    let subcmds  = ["help", "version", "install", "uninstall"]
+    #if os(Windows)
+        let read_cmd = "more"
+    #endif
+    #if os(Linux) || os(macOS)
+        let read_cmd = "cat"
+    #endif
+
+    let subcmds  = ["help", "version", "install", "uninstall", "build"]
     let deny     = ["gamescene", "std"]
     let branch   = "\u{001B}[0;35m-swift-rw-dev"
     let ver      = "0.1.0\(branch)"
@@ -73,11 +101,13 @@ func main() {
     let temp     = Path.home.join(".cstm").join("temp")
 
     struct Expected: Decodable {
-        let name    : String
-        let id      : String
-        let author  : String
-        let version : String
-        let source  : String
+        let name      : String
+        let id        : String
+        let author    : String
+        let version   : String
+        let source    : String
+        let depends   : String
+        let conflicts : String
     }
 
     // Create folders, if required.
@@ -134,7 +164,10 @@ func main() {
         var sources     = [String]()
         var versions    = [String]()
         var identifiers = [String]()
+        var deps        = [String]()
+        var cons        = [String]()
         for i in pkgs {
+            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mStarting retrieval of package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
             if handled.contains(i) {
                 print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0malready handled, ignoring.")
             } else {
@@ -142,7 +175,7 @@ func main() {
                 if pkgmd == "false" {
                     print("⇢ \u{001B}[0;33m⚠  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnot found, ignoring.")
                 } else {
-                    print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mMetadata for package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mretrieved.")
+                    print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mretrieved.")
                     let data = pkgmd.data(using: .utf8)!
                     let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
                     print("""
@@ -150,13 +183,46 @@ func main() {
                        \u{001B}[0;35m│      \u{001B}[0;32mName       : \u{001B}[0;36m\"\(table.name)\"
                        \u{001B}[0;35m│      \u{001B}[0;32mIdentifier : \u{001B}[0;36m\"\(table.id)\"
                        \u{001B}[0;35m│      \u{001B}[0;32mAuthor     : \u{001B}[0;36m\"\(table.author)\"
-                       \u{001B}[0;35m│      \u{001B}[0;32mVersion    : \u{001B}[0;36m\"\(table.version)\"
-                       \u{001B}[0;35m╰╌     \u{001B}[0;32mSource     : \u{001B}[0;36m\"\(table.source)\"\u{001B}[0;0m
+                       \u{001B}[0;35m╰╌     \u{001B}[0;32mVersion    : \u{001B}[0;36m\"\(table.version)\"\u{001B}[0;0m
                     """)
                     handled.append(i)
                     sources.append(table.source)
                     versions.append(table.version)
                     identifiers.append(table.id)
+
+                    if table.depends == "" {
+                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mNo dependencies.")
+                    } else {
+                        let req_deps = table.depends.components(separatedBy: ";")
+                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mDependencies.")
+                        for i in req_deps {
+                            if i == req_deps.first {
+                                print("   \u{001B}[0;35m│      \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
+                            } else {
+                                print("   \u{001B}[0;35m╰╌     \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
+                            }
+                            if deps.contains(i) == false {
+                                deps.append(i)
+                            }
+                        }
+                    }
+
+                    if table.conflicts == "" {
+                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mNo conflicts.")
+                    } else {
+                        let req_cons = table.conflicts.components(separatedBy: ";")
+                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mConflicts.")
+                        for i in req_cons {
+                            if i == req_cons.first {
+                                print("   \u{001B}[0;35m│      \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
+                            } else {
+                                print("   \u{001B}[0;35m╰╌     \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
+                            }
+                            if cons.contains(i) == false {
+                                cons.append(i)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -165,7 +231,26 @@ func main() {
         var iter = 0
         for i in handled {
             print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mInstalling package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
-            print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mRetrieving source.")
+            let splitsrc = sources[iter].components(separatedBy: "|")
+            let files = splitsrc[1].components(separatedBy: ";")
+
+            do {
+                try library_path.join(splitsrc[0]).mkdir()
+            } catch {
+                print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(handled[iter])\" \u{001B}[0;0mcould not be installed, try running with elevated permissions.")
+                exit(1)
+            }
+
+            for i in files {
+                let file = i.components(separatedBy: ":")
+                do {
+                    try file[1].write(to: library_path.join(file[0].b64decode()!))
+                } catch {
+                    print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(handled[iter])\" \u{001B}[0;0mcould not be installed, try running with elevated permissions.")
+                    exit(1)
+                }
+            }
+
             iter = iter + 1
         }
     }
@@ -178,7 +263,7 @@ func main() {
                 if library_path.join(i).exists {
                     do {
                         try library_path.join(i).delete()
-                        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage\u{001B}[0;36m\"\(i)\" \u{001B}[0;0muninstalled.")
+                        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0muninstalled.")
                     } catch {
                         print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mcould not be uninstalled, try running with elevated permissions.")
                     }
@@ -187,6 +272,75 @@ func main() {
                 }
             }
         }
+    }
+
+    if subcmd == "build" {
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mBuilding package \u{001B}[0;36m\"\(pkgs[0])\" \u{001B}[0;0mnow.")
+        let base = Path(pkgs[0]) ?? Path.cwd.join(pkgs[0])
+
+        let files = base.ls().files
+
+        var built_files = [String]()
+
+        for i in files {
+            var content: String
+
+            do {
+                content       = try system(command: "\(read_cmd) \(i)", captureOutput: true).standardOutput
+                let splitpath = "\(i)".components(separatedBy: "/")
+                built_files.append("\(pkgs[0])/\(splitpath.last!):\(content.b64encode()!)")
+                print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mFile \u{001B}[0;36m\"\(splitpath.last!)\" \u{001B}[0;0madded.")
+            } catch {
+                print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkgs[0])\"\u{001B}[0;0m, failed to build.")
+                exit(1)
+            }
+        }
+
+        let joined_files = built_files.joined(separator: ";")
+        let pkgdata = "\(pkgs[0])|\(joined_files)"
+
+        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage data built.")
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mFinalization.")
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mName.")
+        let pkgname    = readLine()
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mAuthor.")
+        let pkgauthor  = readLine()
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mVersion.")
+        let pkgversion = readLine()
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mDependencies, separated by a semicolon, leave blank for none.")
+        let pkgdeps    = readLine()
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mConflicts, separated by a semicolon, leave blank for none.")
+        let pkgcons    = readLine()
+
+        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mFinalizating package.")
+
+        let finalpkg = """
+        {
+            "name": "\(pkgname!)",
+            "id": "\(pkgs[0])",
+            "author": "\(pkgauthor!)",
+            "version": "\(pkgversion!)",
+            "source": "\(pkgdata)",
+            "depends": "\(pkgdeps!)",
+            "conflicts": "\(pkgcons!)"
+        }
+        """
+
+        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage finalized.")
+
+        do {
+            try finalpkg.write(to: Path.cwd.join("\(pkgs[0]).csp"))
+        } catch {
+            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkgs[0])\"\u{001B}[0;0m, failed to write.")
+            exit(1)
+        }
+
+        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkgs[0])\" \u{001B}[0;0mbuilt successfully.")
     }
 }
 
