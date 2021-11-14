@@ -1,5 +1,7 @@
 // CSTM | Deltara3
 // Embrace spaghetti.
+// Wow packages suck!!!!
+
 
 import Foundation
 import FoundationNetworking
@@ -107,7 +109,6 @@ func main() {
         let version   : String
         let source    : String
         let depends   : String
-        let conflicts : String
     }
 
     // Create folders, if required.
@@ -165,7 +166,6 @@ func main() {
         var versions    = [String]()
         var identifiers = [String]()
         var deps        = [String]()
-        var cons        = [String]()
         for i in pkgs {
             print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mStarting retrieval of package \u{001B}[0;36m\"\(i)\" \u{001B}[0;0mnow.")
             if handled.contains(i) {
@@ -206,27 +206,9 @@ func main() {
                             }
                         }
                     }
-
-                    if table.conflicts == "" {
-                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mNo conflicts.")
-                    } else {
-                        let req_cons = table.conflicts.components(separatedBy: ";")
-                        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mConflicts.")
-                        for i in req_cons {
-                            if i == req_cons.first {
-                                print("   \u{001B}[0;35m│      \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
-                            } else {
-                                print("   \u{001B}[0;35m╰╌     \u{001B}[0;36m\"\(i)\"\u{001B}[0;0m")
-                            }
-                            if cons.contains(i) == false {
-                                cons.append(i)
-                            }
-                        }
-                    }
                 }
             }
         }
-        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mReady to install.")
 
         var iter = 0
         for i in handled {
@@ -244,7 +226,7 @@ func main() {
             for i in files {
                 let file = i.components(separatedBy: ":")
                 do {
-                    try file[1].write(to: library_path.join(file[0].b64decode()!))
+                    try file[0].write(to: library_path.join(file[1].b64decode()!))
                 } catch {
                     print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(handled[iter])\" \u{001B}[0;0mcould not be installed, try running with elevated permissions.")
                     exit(1)
@@ -314,9 +296,6 @@ func main() {
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mDependencies, separated by a semicolon, leave blank for none.")
         let pkgdeps    = readLine()
 
-        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mConflicts, separated by a semicolon, leave blank for none.")
-        let pkgcons    = readLine()
-
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mFinalizating package.")
 
         let finalpkg = """
@@ -326,8 +305,7 @@ func main() {
             "author": "\(pkgauthor!)",
             "version": "\(pkgversion!)",
             "source": "\(pkgdata)",
-            "depends": "\(pkgdeps!)",
-            "conflicts": "\(pkgcons!)"
+            "depends": "\(pkgdeps!)"
         }
         """
 
@@ -340,7 +318,10 @@ func main() {
             exit(1)
         }
 
-        print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkgs[0])\" \u{001B}[0;0mbuilt successfully.")
+        print("""
+        ⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage \u{001B}[0;36m\"\(pkgs[0])\" \u{001B}[0;0mbuilt successfully.
+        ⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mSubmit \u{001B}[0;36m\"\(pkgs[0]).csp\" \u{001B}[0;0min a pull request to \u{001B}[0;36m\"Deltara3/cstm-main\"\u{001B}[0;0m, because I'm too broke for servers.
+        """)
     }
 }
 
