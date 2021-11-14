@@ -103,7 +103,6 @@ func main() {
     let temp     = Path.home.join(".cstm").join("temp")
 
     struct Expected: Decodable {
-        let name      : String
         let id        : String
         let author    : String
         let version   : String
@@ -180,7 +179,6 @@ func main() {
                     let table: Expected = try! JSONDecoder().decode(Expected.self, from: data)
                     print("""
                     ⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mPackage table built.
-                       \u{001B}[0;35m│      \u{001B}[0;32mName       : \u{001B}[0;36m\"\(table.name)\"
                        \u{001B}[0;35m│      \u{001B}[0;32mIdentifier : \u{001B}[0;36m\"\(table.id)\"
                        \u{001B}[0;35m│      \u{001B}[0;32mAuthor     : \u{001B}[0;36m\"\(table.author)\"
                        \u{001B}[0;35m╰╌     \u{001B}[0;32mVersion    : \u{001B}[0;36m\"\(table.version)\"\u{001B}[0;0m
@@ -284,14 +282,21 @@ func main() {
         print("⇢ \u{001B}[0;32m✔  \u{001B}[0;0mPackage data built.")
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mFinalization.")
 
-        print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mName.")
-        let pkgname    = readLine()
-
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mAuthor.")
         let pkgauthor  = readLine()
 
+        if pkgauthor!.count == 0 {
+            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mAuthor must be filled in.")
+            exit(1)
+        }
+
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mVersion.")
         let pkgversion = readLine()
+
+        if pkgversion!.count == 0 {
+            print("⇢ \u{001B}[0;31m✖  \u{001B}[0;0mVersion must be filled in.")
+            exit(1)
+        }
 
         print("⇢ \u{001B}[0;35m🕮  \u{001B}[0;0mDependencies, separated by a semicolon, leave blank for none.")
         let pkgdeps    = readLine()
@@ -300,11 +305,10 @@ func main() {
 
         let finalpkg = """
         {
-            "name": "\(pkgname!)",
             "id": "\(pkgs[0])",
             "author": "\(pkgauthor!)",
             "version": "\(pkgversion!)",
-            "source": "\(pkgdata)",
+            "source": "\(pkgdata);ver:\(pkgversion!.b64encode()!)",
             "depends": "\(pkgdeps!)"
         }
         """

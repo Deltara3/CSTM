@@ -5,9 +5,10 @@ Branch: swift-rewrite (Will replace main)
 
 Can:
 - [X] Look cool
-- [ ] Install
+- [X] Install (Sort of, no dependency handling.)
 - [X] Uninstall
 - [ ] Update
+- [X] Build
 - [ ] Publish (From the CLI)
 - [ ] Unpublish (From the CLI)
 
