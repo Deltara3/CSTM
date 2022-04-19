@@ -1,12 +1,10 @@
 # CSTM
-[SPWN](https://github.com/Spu7Nix/SPWN-language) package manager, AUR style.
-
-Branch: main
+[SPWN](https://github.com/Spu7Nix/SPWN-language) package manager, probably more like WinGet now.
 
 Can:
-- [X] Install
-- [X] Uninstall
-- [X] Update
+- [ ] Install
+- [ ] Uninstall
+- [ ] Update
 - [ ] Publish (From the CLI)
 - [ ] Unpublish (From the CLI)
 
